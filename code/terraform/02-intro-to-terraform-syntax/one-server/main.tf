@@ -10,7 +10,7 @@ provider "aws" {
 }
 
 resource "aws_instance" "micro" {
-  ami           = "ami-04d5cc9b88f9d1d39"
+  ami           = "ami-08d658f84a6d84a80"
   instance_type = "t2.micro"
 
   tags = {
@@ -18,3 +18,7 @@ resource "aws_instance" "micro" {
   }
 }
 
+output "public_ip" {
+  value       = aws_instance.micro.public_ip
+  description = "The public IP of the Instance"
+}

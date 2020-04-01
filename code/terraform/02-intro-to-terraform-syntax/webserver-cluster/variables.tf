@@ -4,20 +4,20 @@ variable "server_port" {
   default     = 8080
 }
 
-variable "alb_name" {
-  description = "The name of the ALB"
+variable "alb_webserver_name" {
+  description = "The name of the webserver ALB"
   type        = string
-  default     = "terraform-asg-example"
+  default     = "web-server-asg"
 }
 
 variable "instance_security_group_name" {
   description = "The name of the security group for the EC2 Instances"
   type        = string
-  default     = "terraform-example-instance"
+  default     = "web-server"
 }
 
-variable "alb_security_group_name" {
+variable "alb_web-server_sg_name" {
   description = "The name of the security group for the ALB"
   type        = string
-  default     = "terraform-example-alb"
+  default     = "web-server-sg-alb"
 }

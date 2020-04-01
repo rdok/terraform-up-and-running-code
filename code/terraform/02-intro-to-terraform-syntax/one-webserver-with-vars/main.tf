@@ -3,29 +3,29 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-2"
+  region = "eu-west-1"
 
   # Allow any 2.x version of the AWS provider
   version = "~> 2.0"
 }
 
-resource "aws_instance" "example" {
-  ami                    = "ami-0c55b159cbfafe1f0"
+resource "aws_instance" "web-server" {
+  ami                    = "ami-08d658f84a6d84a80"
   instance_type          = "t2.micro"
-  vpc_security_group_ids = [aws_security_group.instance.id]
+  vpc_security_group_ids = [aws_security_group.web-server.id]
 
   user_data = <<-EOF
               #!/bin/bash
-              echo "Hello, World" > index.html
+              echo "Cyberpunk 2077" > index.html
               nohup busybox httpd -f -p ${var.server_port} &
               EOF
 
   tags = {
-    Name = "terraform-example"
+    Name = "cyberpunk"
   }
 }
 
-resource "aws_security_group" "instance" {
+resource "aws_security_group" "web-server" {
 
   name = var.security_group_name
 

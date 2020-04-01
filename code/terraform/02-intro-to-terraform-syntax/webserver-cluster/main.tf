@@ -3,20 +3,20 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-2"
+  region = "eu-west-1"
 
   # Allow any 2.x version of the AWS provider
   version = "~> 2.0"
 }
 
-resource "aws_launch_configuration" "example" {
-  image_id        = "ami-0c55b159cbfafe1f0"
+resource "aws_launch_configuration" "web-server" {
+  image_id        = "ami-08d658f84a6d84a80"
   instance_type   = "t2.micro"
-  security_groups = [aws_security_group.instance.id]
+  security_groups = [aws_security_group.web-server.id]
 
   user_data = <<-EOF
               #!/bin/bash
-              echo "Hello, World" > index.html
+              echo "Heavy Falcon" > index.html
               nohup busybox httpd -f -p ${var.server_port} &
               EOF
 
@@ -27,11 +27,11 @@ resource "aws_launch_configuration" "example" {
   }
 }
 
-resource "aws_autoscaling_group" "example" {
-  launch_configuration = aws_launch_configuration.example.name
+resource "aws_autoscaling_group" "web-server" {
+  launch_configuration = aws_launch_configuration.web-server.name
   vpc_zone_identifier  = data.aws_subnet_ids.default.ids
 
-  target_group_arns = [aws_lb_target_group.asg.arn]
+  target_group_arns = [aws_lb_target_group.web-server.arn]
   health_check_type = "ELB"
 
   min_size = 2
@@ -39,12 +39,12 @@ resource "aws_autoscaling_group" "example" {
 
   tag {
     key                 = "Name"
-    value               = "terraform-asg-example"
+    value               = "web-server-asg"
     propagate_at_launch = true
   }
 }
 
-resource "aws_security_group" "instance" {
+resource "aws_security_group" "web-server" {
   name = var.instance_security_group_name
 
   ingress {
@@ -63,17 +63,17 @@ data "aws_subnet_ids" "default" {
   vpc_id = data.aws_vpc.default.id
 }
 
-resource "aws_lb" "example" {
+resource "aws_lb" "web-server" {
 
-  name               = var.alb_name
+  name               = var.alb_webserver_name
 
   load_balancer_type = "application"
   subnets            = data.aws_subnet_ids.default.ids
-  security_groups    = [aws_security_group.alb.id]
+  security_groups    = [aws_security_group.alb_web-server.id]
 }
 
 resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.example.arn
+  load_balancer_arn = aws_lb.web-server.arn
   port              = 80
   protocol          = "HTTP"
 
@@ -89,9 +89,9 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-resource "aws_lb_target_group" "asg" {
+resource "aws_lb_target_group" "web-server" {
 
-  name = var.alb_name
+  name = var.alb_webserver_name
 
   port     = var.server_port
   protocol = "HTTP"
@@ -108,7 +108,7 @@ resource "aws_lb_target_group" "asg" {
   }
 }
 
-resource "aws_lb_listener_rule" "asg" {
+resource "aws_lb_listener_rule" "web-server" {
   listener_arn = aws_lb_listener.http.arn
   priority     = 100
 
@@ -119,13 +119,13 @@ resource "aws_lb_listener_rule" "asg" {
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.asg.arn
+    target_group_arn = aws_lb_target_group.web-server.arn
   }
 }
 
-resource "aws_security_group" "alb" {
+resource "aws_security_group" "alb_web-server" {
 
-  name = var.alb_security_group_name
+  name = var.alb_web-server_sg_name
 
   # Allow inbound HTTP requests
   ingress {
